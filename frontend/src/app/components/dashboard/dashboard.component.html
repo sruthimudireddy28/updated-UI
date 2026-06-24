@@ -1,0 +1,163 @@
+<div class="dashboard-container container animate-fade-in">
+  
+  <!-- Pending Approval Alert -->
+  @if (auth.isPendingManager()) {
+    <div class="alert alert-warning glass-card mb-6" style="border-left: 4px solid var(--color-warning); background: var(--color-warning-bg); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; border-radius: var(--border-radius-md);">
+      <span style="font-size: 1.5rem;">ℹ️</span>
+      <div>
+        <h4 style="margin: 0; font-weight: 700; color: var(--color-warning);">Manager Access Pending</h4>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">Your application for Hotel Manager role is currently pending approval by an administrator. You will gain access to the Management Control Panel once approved.</p>
+      </div>
+    </div>
+  }
+
+  <!-- Rejected Access Alert -->
+  @if (auth.isRejectedManager()) {
+    <div class="alert alert-danger glass-card mb-6" style="border-left: 4px solid var(--color-danger); background: var(--color-danger-bg); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; border-radius: var(--border-radius-md);">
+      <span style="font-size: 1.5rem;">⚠️</span>
+      <div>
+        <h4 style="margin: 0; font-weight: 700; color: var(--color-danger);">Manager Access Rejected</h4>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">Your application for Hotel Manager role was rejected by an administrator. Please contact support if you believe this was an error.</p>
+      </div>
+    </div>
+  }
+
+  <!-- Loyalty Header Panel Component -->
+  <app-loyalty-panel 
+    [userName]="auth.currentUser()?.name || 'Guest'"
+    [loyaltyAccount]="loyalty.loyaltyAccount()"
+    (join)="joinLoyalty()">
+  </app-loyalty-panel>
+
+  <!-- Main Columns -->
+  <div class="dashboard-grid">
+    <!-- Bookings Column -->
+    <div class="bookings-section glass-card">
+      <h2 class="section-title mb-4">My Hotel Bookings</h2>
+
+      @if (bookingService.bookings().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📅</span>
+          <h3>No Bookings Found</h3>
+          <p>You haven't booked any rooms yet. Browse our selection of luxury hotels!</p>
+        </div>
+      } @else {
+        @for (booking of bookingService.bookings(); track booking.bookingId) {
+          <app-booking-item 
+            [booking]="booking"
+            (pay)="openPayment($event)"
+            (review)="openReviewModal($event)"
+            (cancel)="openCancelModal($event)">
+          </app-booking-item>
+        }
+      }
+    </div>
+
+    <!-- Right Side Panel: Points History -->
+    <div class="points-section glass-card">
+      <h2 class="section-title mb-4">Points History</h2>
+
+      @if (loyalty.pointHistory().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">🪙</span>
+          <h3>No Transactions</h3>
+          <p>Your point transaction log is empty.</p>
+        </div>
+      } @else {
+        @for (txn of loyalty.pointHistory(); track txn.pointHistoryId) {
+          <div class="txn-item">
+            <div class="txn-info">
+              <span class="txn-desc">{{ txn.description }}</span>
+              <span class="txn-date">{{ txn.createdAt | date:'short' }}</span>
+            </div>
+            <span class="txn-points" [class.positive]="txn.points > 0" [class.negative]="txn.points < 0">
+              {{ txn.points > 0 ? '+' : '' }}{{ txn.points }} pts
+            </span>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Profile Edit Section -->
+    <div class="profile-section glass-card mt-6" style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: rgba(0, 0, 0, 0.15);">
+      <h2 class="section-title mb-4">My Profile</h2>
+      <form (ngSubmit)="updateProfile()">
+        <div class="form-group mb-3">
+          <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Full Name</label>
+          <input type="text" name="profileName" [(ngModel)]="profileForm.name" required class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Contact Number</label>
+          <input type="text" name="profilePhone" [(ngModel)]="profileForm.contactNumber" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">New Password (Optional)</label>
+          <input type="password" name="profilePassword" [(ngModel)]="profileForm.password" class="form-input" placeholder="Leave blank to keep current" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+        </div>
+        <button type="submit" [disabled]="isUpdatingProfile()" class="btn btn-primary w-full mt-4" style="width: 100%; padding: 0.75rem; font-weight: 600; border-radius: var(--border-radius-md); background: var(--accent-indigo); border: none; color: white; cursor: pointer;">
+          @if (isUpdatingProfile()) {
+            Saving...
+          } @else {
+            Save Profile
+          }
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- Payment Modal Component -->
+@if (selectedBookingForPay()) {
+  <app-payment-dialog
+    [booking]="selectedBookingForPay()"
+    [loyaltyAccount]="loyalty.loyaltyAccount()"
+    [pointsDiscount]="pointsDiscount()"
+    [submitting]="isPaying()"
+    [(formModel)]="paymentData"
+    (close)="selectedBookingForPay.set(null)"
+    (pointsChange)="onPointsChange()"
+    (submit)="submitPayment()">
+  </app-payment-dialog>
+}
+
+<!-- Write Review Modal Component -->
+<div class="modal-overlay" *ngIf="selectedBookingForReview()">
+  <div class="modal-card glass-card animate-fade-in">
+    <div class="modal-header">
+      <h2>Write a Review</h2>
+      <button (click)="selectedBookingForReview.set(null)" class="btn-close">✕</button>
+    </div>
+
+    <app-review-form 
+      [submitting]="isSubmittingReview()"
+      (submitReview)="submitReview($event)">
+    </app-review-form>
+  </div>
+</div>
+
+<!-- Cancellation Modal Overlay -->
+<div class="modal-overlay" *ngIf="selectedBookingForCancel()">
+  <div class="modal-card glass-card animate-fade-in">
+    <div class="modal-header">
+      <h2>Cancel Booking</h2>
+      <button (click)="selectedBookingForCancel.set(null)" class="btn-close">✕</button>
+    </div>
+
+    <form (ngSubmit)="submitCancellation()">
+      <p class="modal-warning-text mb-4">
+        Are you sure you want to cancel your reservation for Booking #{{ selectedBookingForCancel()?.bookingId }}?
+      </p>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Reason for Cancellation</label>
+        <textarea name="cancelReason" [(ngModel)]="cancellationReason" required rows="3" class="form-input" placeholder="Change of plans, health issue..."></textarea>
+      </div>
+
+      <div class="grid-cols-2 mt-4">
+        <button type="button" (click)="selectedBookingForCancel.set(null)" class="btn btn-secondary w-full">Keep Booking</button>
+        <button type="submit" [disabled]="isCancelling()" class="btn btn-danger w-full">Confirm Cancellation</button>
+      </div>
+    </form>
+  </div>
+</div>

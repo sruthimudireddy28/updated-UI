@@ -1,0 +1,280 @@
+<div class="admin-container container animate-fade-in">
+  <div class="admin-header mb-8">
+    <h1 class="admin-title">Manager Control Panel</h1>
+    <p class="admin-subtitle">Add accommodations, manage rooms, respond to guest reviews, and track bookings.</p>
+  </div>
+
+  <!-- Analytics Cards component -->
+  <app-analytics-stats [bookings]="bookingService.bookings()"></app-analytics-stats>
+
+  <!-- Navigation Tabs -->
+  <div class="admin-tabs glass-card mb-8">
+    <button [class.active]="activeTab() === 'hotels'" (click)="activeTab.set('hotels')" class="tab-btn">🏨 Hotels & Rooms</button>
+    <button [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')" class="tab-btn">⭐ Guest Reviews</button>
+    <button [class.active]="activeTab() === 'bookings'" (click)="activeTab.set('bookings')" class="tab-btn">📅 Room Bookings</button>
+    <button *ngIf="auth.isAdmin()" [class.active]="activeTab() === 'approvals'" (click)="activeTab.set('approvals')" class="tab-btn">🔑 Manager Approvals</button>
+  </div>
+
+  <!-- HOTELS & ROOMS TAB -->
+  <div *ngIf="activeTab() === 'hotels'" class="admin-grid">
+    <!-- Add Hotel Form Component -->
+    <app-hotel-form-manager
+      [submitting]="isSubmittingHotel()"
+      [(formModel)]="hotelForm"
+      (submit)="submitHotel()">
+    </app-hotel-form-manager>
+
+    <!-- Add Room Form Component -->
+    <app-room-form-manager
+      [hotels]="hotelService.hotels()"
+      [submitting]="isSubmittingRoom()"
+      [(formModel)]="roomForm"
+      (submit)="submitRoom()">
+    </app-room-form-manager>
+  </div>
+
+  <!-- GUEST REVIEWS TAB -->
+  <app-review-moderator
+    *ngIf="activeTab() === 'reviews'"
+    [hotels]="hotelService.hotels()"
+    [reviews]="reviewService.reviews()"
+    [(selectedHotelId)]="selectedHotelIdForReviews"
+    [(responses)]="reviewResponses"
+    (hotelChange)="loadReviewsForHotel()"
+    (submitResponse)="submitResponse($event)">
+  </app-review-moderator>
+
+  <!-- ROOM BOOKINGS TAB -->
+  <div *ngIf="activeTab() === 'bookings'" class="bookings-admin-section glass-card">
+    <h2 class="section-title mb-4">Platform Bookings</h2>
+
+    @if (bookingService.bookings().length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📅</span>
+        <h3>No Bookings Recorded</h3>
+        <p>Bookings will appear here once guests complete reservation.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Hotel</th>
+              <th>Room Type</th>
+              <th>Guest Details</th>
+              <th>Dates</th>
+              <th>Cost</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of bookingService.bookings(); track b.bookingId) {
+              <tr>
+                <td>#{{ b.bookingId }}</td>
+                <td>
+                  <div class="guest-details-cell">
+                    <strong>{{ b.hotelName || 'Smart Hotel' }}</strong>
+                    <span>ID: {{ b.hotelId }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="guest-details-cell">
+                    <strong>{{ b.roomType || 'Standard Room' }}</strong>
+                    <span>ID: {{ b.roomId }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="guest-details-cell">
+                    <strong>{{ b.guestName }}</strong>
+                    <span>{{ b.guestEmail }}</span>
+                  </div>
+                </td>
+                <td>{{ b.checkInDate | date:'shortDate' }} - {{ b.checkOutDate | date:'shortDate' }}</td>
+                <td class="cost-cell">{{ b.totalAmount | currency:'INR' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getBookingStatusClass(b.status)">
+                    {{ b.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- MANAGER APPROVALS TAB (Admin Only) -->
+  <div *ngIf="activeTab() === 'approvals' && auth.isAdmin()" class="approvals-admin-section glass-card">
+    <h2 class="section-title mb-4">Manager Registration Requests</h2>
+
+    @if (managers().length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">🔑</span>
+        <h3>No Manager Accounts Registered</h3>
+        <p>Manager accounts will appear here for verification and hotel assignment.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Contact</th>
+              <th>Requested Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of managers(); track m.userId) {
+              <tr>
+                <td>#{{ m.userId }}</td>
+                <td><strong>{{ m.name }}</strong></td>
+                <td>{{ m.email }}</td>
+                <td>{{ m.contactNumber }}</td>
+                <td><span class="badge badge-info">{{ m.role }}</span></td>
+                <td>
+                  <span class="badge" [ngClass]="getManagerStatusClass(m.approvalStatus)">
+                    {{ m.approvalStatus }}
+                  </span>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    @if (m.approvalStatus === 'Pending') {
+                      <button (click)="approveManager(m.userId)" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                        Approve
+                      </button>
+                      <button (click)="rejectManager(m.userId)" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--color-danger);">
+                        Reject
+                      </button>
+                    } @else if (m.approvalStatus === 'Approved') {
+                      <button (click)="openAssignmentModal(m)" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                        Assign Hotels
+                      </button>
+                      <button (click)="openEditManagerModal(m)" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--accent-indigo);">
+                        ✏️ Edit
+                      </button>
+                    } @else {
+                      <button (click)="approveManager(m.userId)" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                        Re-Approve
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Hotel Assignment Modal Component -->
+<div class="modal-overlay" *ngIf="selectedManagerForAssignment()">
+  <div class="modal-card glass-card animate-fade-in" style="max-width: 500px; width: 100%; z-index: 1000;">
+    <div class="modal-header">
+      <h2>Assign Hotels to Manager</h2>
+      <button (click)="selectedManagerForAssignment.set(null)" class="btn-close">✕</button>
+    </div>
+
+    <div class="mb-4">
+      <p style="font-size: 0.95rem; color: var(--text-secondary);">
+        Select hotels to assign to <strong>{{ selectedManagerForAssignment()?.name }}</strong> ({{ selectedManagerForAssignment()?.email }}).
+      </p>
+    </div>
+
+    <div style="max-height: 300px; overflow-y: auto; padding-right: 0.5rem; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+      @if (allHotels().length === 0) {
+        <p style="text-align: center; color: var(--text-muted);">No hotels registered in the platform yet.</p>
+      } @else {
+        @for (hotel of allHotels(); track hotel.hotelId) {
+          <div class="hotel-select-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-weight: 600; font-size: 0.95rem;">{{ hotel.name }}</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">{{ hotel.location }}</span>
+            </div>
+            <input 
+              type="checkbox"
+              [checked]="assignedHotelIds().includes(hotel.hotelId)"
+              (change)="toggleHotelSelection(hotel.hotelId)"
+              style="width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: var(--accent-indigo);" />
+          </div>
+        }
+      }
+    </div>
+
+    <div class="grid-cols-2">
+      <button type="button" (click)="selectedManagerForAssignment.set(null)" class="btn btn-secondary w-full">Cancel</button>
+      <button type="button" (click)="saveAssignments()" class="btn btn-primary w-full">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Manager Modal -->
+<div class="modal-overlay" *ngIf="selectedManagerForEdit()">
+  <div class="modal-card glass-card animate-fade-in" style="max-width: 550px; width: 100%; z-index: 1000;">
+    <div class="modal-header">
+      <h2>Edit Manager Details</h2>
+      <button (click)="selectedManagerForEdit.set(null)" class="btn-close">✕</button>
+    </div>
+
+    <div class="mb-4">
+      <p style="font-size: 0.95rem; color: var(--text-secondary);">
+        Editing <strong>{{ selectedManagerForEdit()?.name }}</strong> ({{ selectedManagerForEdit()?.email }})
+      </p>
+    </div>
+
+    <!-- Name Field -->
+    <div class="form-group mb-3">
+      <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Full Name</label>
+      <input type="text" name="editMgrName" [(ngModel)]="editManagerForm.name" required class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+    </div>
+
+    <!-- Contact Field -->
+    <div class="form-group mb-3">
+      <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Contact Number</label>
+      <input type="text" name="editMgrContact" [(ngModel)]="editManagerForm.contactNumber" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+    </div>
+
+    <!-- Hotel Assignments -->
+    <div class="form-group mb-3">
+      <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; display: block;">Hotel Assignments</label>
+      <div style="max-height: 200px; overflow-y: auto; padding-right: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        @if (allHotels().length === 0) {
+          <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">No hotels available.</p>
+        } @else {
+          @for (hotel of allHotels(); track hotel.hotelId) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm);">
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 600; font-size: 0.9rem;">{{ hotel.name }}</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">{{ hotel.location }}</span>
+              </div>
+              <input 
+                type="checkbox"
+                [checked]="editAssignedHotelIds().includes(hotel.hotelId)"
+                (change)="toggleEditHotelSelection(hotel.hotelId)"
+                style="width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: var(--accent-indigo);" />
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="grid-cols-2 mt-4">
+      <button type="button" (click)="selectedManagerForEdit.set(null)" class="btn btn-secondary w-full">Cancel</button>
+      <button type="button" (click)="saveManagerEdits()" [disabled]="isSavingManagerEdit()" class="btn btn-primary w-full">
+        @if (isSavingManagerEdit()) {
+          Saving...
+        } @else {
+          Save Changes
+        }
+      </button>
+    </div>
+  </div>
+</div>

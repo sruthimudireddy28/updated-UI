@@ -1,0 +1,27 @@
+# Backend - .NET
+backend/*/bin/
+backend/*/obj/
+backend/*/Logs/
+backend/*/*.db
+backend/*/*.db-shm
+backend/*/*.db-wal
+backend/.vs/
+backend/*.pids
+
+# Frontend - Angular/Node
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+frontend/.env
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS
+.DS_Store
+Thumbs.db

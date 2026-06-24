@@ -1,0 +1,289 @@
+<div class="hotel-detail-container container animate-fade-in" *ngIf="hotelService.currentHotel()">
+  
+  <a routerLink="/" class="back-link mb-4">← Back to Hotels</a>
+
+  <div *ngIf="canManage()" class="admin-actions-bar mb-4 animate-fade-in">
+    <span class="logo-icon">🛠️</span>
+    <strong>Management Controls:</strong>
+    <button (click)="openEditHotelModal()" class="btn btn-secondary btn-sm ml-2">Edit Hotel</button>
+    <button (click)="onDeleteHotel()" class="btn btn-danger btn-sm ml-2">Delete Hotel</button>
+  </div>
+
+  <section class="hotel-hero-section glass-card mb-8">
+    <div class="hero-info">
+      <div class="hero-meta">
+        <span class="hotel-loc-tag">📍 {{ hotelService.currentHotel().location }}</span>
+        <span class="star-rating">★ {{ hotelService.currentHotel().rating | number:'1.1-1' }} ({{ reviewService.reviews().length }} Reviews)</span>
+      </div>
+      <h1 class="hotel-detail-title">{{ hotelService.currentHotel().name }}</h1>
+      <p class="hotel-detail-desc">{{ hotelService.currentHotel().description }}</p>
+
+      <div class="hotel-amenities-row mt-4">
+        @for (amenity of getAmenities(hotelService.currentHotel().amenities); track amenity) {
+          <span class="amenity-badge">
+            {{ amenity }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="hero-image-placeholder" [style.background]="getHotelGradient(hotelService.currentHotel().hotelId)"></div>
+  </section>
+
+  <div class="detail-columns-grid">
+    
+    <div class="rooms-column">
+      <div class="rooms-header-card glass-card mb-4">
+        <h2 class="section-title">Available Accommodations</h2>
+        <p class="subtitle-text">Select your stay dates to search current inventory</p>
+
+        <form (ngSubmit)="onSearchRooms()" class="dates-form mt-3">
+          <div class="form-group flex-1">
+            <label class="form-label">Check-In</label>
+            <input 
+              type="date" 
+              name="checkIn"
+              [min]="minDate"
+              [(ngModel)]="dates.checkIn"
+              (ngModelChange)="onDateChange()"
+              class="form-input" 
+              required />
+          </div>
+          
+          <div class="form-group flex-1">
+            <label class="form-label">Check-Out</label>
+            <input 
+              type="date" 
+              name="checkOut"
+              [min]="minCheckOutDate"
+              [(ngModel)]="dates.checkOut"
+              (ngModelChange)="onDateChange()"
+              class="form-input" 
+              required />
+          </div>
+
+          <div class="search-btn-wrapper">
+            <button type="submit" class="btn btn-primary search-rooms-btn">
+              Check Dates
+            </button>
+          </div>
+        </form>
+      </div>
+
+      @if (availableRooms().length === 0) {
+        <div class="empty-state glass-card">
+          <span class="empty-icon">🛏️</span>
+          <h3>No Rooms Found</h3>
+          <p>Please adjust your dates or try searching another accommodation.</p>
+        </div>
+      } @else {
+        @for (room of availableRooms(); track room.roomId) {
+          <app-room-card 
+            [room]="room" 
+            [canManage]="canManage()"
+            (book)="bookRoom($event)"
+            (edit)="openEditRoomModal($event)"
+            (delete)="onDeleteRoom($event)">
+          </app-room-card>
+        }
+      }
+    </div>
+
+    <div class="reviews-column glass-card">
+      <h2 class="section-title mb-4">Guest Feedback</h2>
+
+      <div *ngIf="reviewService.summaries()" class="summary-stats-box mb-4">
+        <div class="avg-rating-cell">
+          <span class="avg-val">{{ reviewService.summaries().averageRating | number:'1.1-1' }}</span>
+          <span class="avg-stars">★★★★★</span>
+          <span class="avg-count">Based on {{ reviewService.summaries().totalReviews }} reviews</span>
+        </div>
+
+        <div class="rating-bars-cell">
+          @for (row of getStarRows(); track row.stars) {
+            <div class="star-row">
+              <span class="star-lbl">{{ row.stars }}★</span>
+              <div class="rating-bar-bg">
+                <div class="rating-bar-fill" [style.width]="row.percent + '%'"></div>
+              </div>
+              <span class="star-count">{{ row.count }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (reviewService.reviews().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">⭐</span>
+          <h3>No Reviews Yet</h3>
+          <p>Be the first traveler to stay here and leave a review!</p>
+        </div>
+      } @else {
+        @for (rev of reviewService.reviews(); track rev.reviewId) {
+          <app-review-card [review]="rev" (helpful)="markHelpful($event)"></app-review-card>
+        }
+      }
+    </div>
+
+  </div>
+</div>
+
+@if (activeBookingRoom()) {
+  <app-booking-form-dialog
+    [room]="activeBookingRoom()"
+    [hotelName]="hotelService.currentHotel().name"
+    [checkIn]="dates.checkIn"
+    [checkOut]="dates.checkOut"
+    [submitting]="isReserving()"
+    [(formModel)]="bookingForm"
+    (close)="activeBookingRoom.set(null)"
+    (confirm)="submitReservation()">
+  </app-booking-form-dialog>
+}
+
+<!-- Edit Hotel Dialog -->
+<div *ngIf="isEditingHotel()" class="modal-overlay">
+  <div class="modal-card glass-card animate-fade-in">
+    <div class="modal-header">
+      <h2>Edit Hotel: {{ hotelService.currentHotel().name }}</h2>
+      <button (click)="isEditingHotel.set(false)" class="btn-close">✕</button>
+    </div>
+
+    <form (ngSubmit)="submitEditHotel()">
+      <div class="form-group mb-3">
+        <label class="form-label">Hotel Name</label>
+        <input type="text" name="hotelName" [(ngModel)]="editHotelForm.name" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Location (Description)</label>
+        <input type="text" name="hotelLoc" [(ngModel)]="editHotelForm.location" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Address</label>
+        <input type="text" name="hotelAddr" [(ngModel)]="editHotelForm.address" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">City</label>
+        <input type="text" name="hotelCity" [(ngModel)]="editHotelForm.city" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">State</label>
+        <input type="text" name="hotelState" [(ngModel)]="editHotelForm.state" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Country</label>
+        <input type="text" name="hotelCountry" [(ngModel)]="editHotelForm.country" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Zip Code</label>
+        <input type="text" name="hotelZip" [(ngModel)]="editHotelForm.zipCode" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="hotelDesc" [(ngModel)]="editHotelForm.description" rows="3" required class="form-input"></textarea>
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Image URL</label>
+        <input type="text" name="hotelImg" [(ngModel)]="editHotelForm.imageUrl" class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Contact Number</label>
+        <input type="text" name="hotelContact" [(ngModel)]="editHotelForm.contactNumber" class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="hotelEmail" [(ngModel)]="editHotelForm.email" class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Amenities (Comma separated)</label>
+        <input type="text" name="hotelAmenities" [(ngModel)]="editHotelForm.amenities" class="form-input" />
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full mt-4">
+        Save Changes
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Room Dialog -->
+<div *ngIf="editingRoom()" class="modal-overlay">
+  <div class="modal-card glass-card animate-fade-in">
+    <div class="modal-header">
+      <h2>Edit Room: {{ editingRoom().roomNumber }}</h2>
+      <button (click)="editingRoom.set(null)" class="btn-close">✕</button>
+    </div>
+
+    <form (ngSubmit)="submitEditRoom()">
+      <div class="form-group mb-3">
+        <label class="form-label">Room Number</label>
+        <input type="text" name="roomNumber" [(ngModel)]="editRoomForm.roomNumber" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Room Type</label>
+        <input type="text" name="roomType" [(ngModel)]="editRoomForm.roomType" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Price Per Night (INR)</label>
+        <input type="number" name="roomPrice" [(ngModel)]="editRoomForm.pricePerNight" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="roomDesc" [(ngModel)]="editRoomForm.description" rows="3" required class="form-input"></textarea>
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Max Occupancy</label>
+        <input type="number" name="roomOccupancy" [(ngModel)]="editRoomForm.maxOccupancy" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Bed Count</label>
+        <input type="number" name="roomBedCount" [(ngModel)]="editRoomForm.bedCount" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Bed Type</label>
+        <input type="text" name="roomBedType" [(ngModel)]="editRoomForm.bedType" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Floor Number</label>
+        <input type="number" name="roomFloor" [(ngModel)]="editRoomForm.floorNumber" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Room Size (Sq Ft)</label>
+        <input type="number" name="roomSize" [(ngModel)]="editRoomForm.roomSize" required class="form-input" />
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label">Room Image URL</label>
+        <input type="text" name="roomImg" [(ngModel)]="editRoomForm.imageUrl" class="form-input" />
+      </div>
+
+      <div class="form-group mb-3" style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" name="roomAvailable" id="roomAvailable" [(ngModel)]="editRoomForm.isAvailable" />
+        <label for="roomAvailable" class="form-label mb-0 cursor-pointer" style="margin-bottom: 0;">Available for Booking</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full mt-4">
+        Save Changes
+      </button>
+    </form>
+  </div>
+</div>

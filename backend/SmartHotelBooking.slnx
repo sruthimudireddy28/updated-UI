@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="ApiGateway/ApiGateway.csproj" />
+  <Project Path="AuthService/AuthService.csproj" />
+  <Project Path="BookingService/BookingService.csproj" />
+  <Project Path="HotelService/HotelService.csproj" />
+  <Project Path="LoyaltyService/LoyaltyService.csproj" />
+  <Project Path="PaymentService/PaymentService.csproj" />
+  <Project Path="ReviewService/ReviewService.csproj" />
+  <Project Path="RoomService/RoomService.csproj" />
+</Solution>
