@@ -157,6 +157,16 @@ namespace BookingService.Controllers
             return Ok(result);
         }
 
+        [HttpPut("{id}/payment")]
+        public async Task<IActionResult> UpdateBookingPayment(int id, [FromBody] UpdateBookingPaymentDto request)
+        {
+            var result = await _bookingService.UpdateBookingPaymentAsync(id, request.PaymentId);
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -172,5 +182,10 @@ namespace BookingService.Controllers
     public class UpdateStatusDto
     {
         public string Status { get; set; } = string.Empty;
+    }
+
+    public class UpdateBookingPaymentDto
+    {
+        public int PaymentId { get; set; }
     }
 }

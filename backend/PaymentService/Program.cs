@@ -58,6 +58,8 @@ try
     // Register HttpClient for inter-service communication
     builder.Services.AddHttpClient<IPaymentProcessingService, PaymentProcessingService>();
 
+    builder.Services.AddHttpContextAccessor();
+
     // Register Services
     builder.Services.AddScoped<IPaymentProcessingService, PaymentProcessingService>();
 

@@ -14,6 +14,8 @@ namespace PaymentService.DTOs
         public string CardLastFourDigits { get; set; } = string.Empty;
         public DateTime? PaymentDate { get; set; }
         public decimal RefundAmount { get; set; }
+        public int PointsToRedeem { get; set; }
+        public decimal DiscountAmount { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -28,6 +30,8 @@ namespace PaymentService.DTOs
         public string CardHolderName { get; set; } = string.Empty;
         public string ExpiryDate { get; set; } = string.Empty;
         public string CVV { get; set; } = string.Empty;
+        public int PointsToRedeem { get; set; }
+        public decimal DiscountAmount { get; set; }
     }
 
     public class ProcessPaymentDto

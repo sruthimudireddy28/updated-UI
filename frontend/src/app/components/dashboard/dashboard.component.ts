@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { BookingService } from '../../services/booking.service';
 import { LoyaltyService } from '../../services/loyalty.service';
 import { ReviewService } from '../../services/review.service';
@@ -29,6 +30,7 @@ export class DashboardComponent implements OnInit {
   loyalty = inject(LoyaltyService);
   reviewService = inject(ReviewService);
   auth = inject(AuthService);
+  router = inject(Router);
 
   selectedBookingForPay = signal<any | null>(null);
   selectedBookingForReview = signal<any | null>(null);
@@ -221,6 +223,7 @@ submitReview(formData: any) {
       this.isSubmittingReview.set(false);
       this.selectedBookingForReview.set(null);
       this.bookingService.getMyBookings().subscribe();
+      this.router.navigate(['/hotel', booking.hotelId]);
     },
     error: () => this.isSubmittingReview.set(false)
   });

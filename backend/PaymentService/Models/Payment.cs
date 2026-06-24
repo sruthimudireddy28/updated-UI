@@ -47,6 +47,11 @@ namespace PaymentService.Models
         [MaxLength(500)]
         public string RefundReason { get; set; } = string.Empty;
 
+        public int PointsToRedeem { get; set; } = 0;
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal DiscountAmount { get; set; } = 0;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
