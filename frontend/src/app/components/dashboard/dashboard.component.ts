@@ -51,61 +51,11 @@ export class DashboardComponent implements OnInit {
   cancellationReason = '';
   pointsDiscount = signal(0);
 
-  // Profile editing
-  profileForm = {
-    name: '',
-    contactNumber: '',
-    password: ''
-  };
-  isUpdatingProfile = signal(false);
-
   ngOnInit() {
     this.bookingService.getMyBookings().subscribe();
     this.loyalty.getLoyaltyAccount().subscribe();
     this.loyalty.getHistory().subscribe();
     this.bookingService.getMyPayments().subscribe();
-
-    // Initialize profile form with current user data
-    const user = this.auth.currentUser();
-    if (user) {
-      this.profileForm.name = user.name || '';
-      // Load full user details if we have a userId
-      if (user.userId) {
-        this.auth.getUserById(user.userId).subscribe({
-          next: (res: any) => {
-            if (res.success && res.data) {
-              this.profileForm.name = res.data.name || user.name || '';
-              this.profileForm.contactNumber = res.data.contactNumber || '';
-            }
-          }
-        });
-      }
-    }
-  }
-
-  updateProfile() {
-    const user = this.auth.currentUser();
-    if (!user?.userId) return;
-    if (this.isUpdatingProfile()) return;
-
-    this.isUpdatingProfile.set(true);
-    const payload: any = {
-      name: this.profileForm.name,
-      contactNumber: this.profileForm.contactNumber
-    };
-    if (this.profileForm.password && this.profileForm.password.trim().length > 0) {
-      payload.password = this.profileForm.password;
-    }
-
-    this.auth.updateProfile(user.userId, payload).subscribe({
-      next: () => {
-        this.isUpdatingProfile.set(false);
-        this.profileForm.password = ''; // Clear password field after save
-      },
-      error: () => {
-        this.isUpdatingProfile.set(false);
-      }
-    });
   }
 
   joinLoyalty() {

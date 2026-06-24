@@ -30,7 +30,7 @@ try
 
     // Configure Database
     builder.Services.AddDbContext<RoomDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // Configure JWT Authentication
     var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -116,14 +116,6 @@ try
     app.MapControllers();
 
     Log.Information("Room Service started successfully on port 5003");
-    
-    // Ensure Database is Created
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<RoomDbContext>();
-        db.Database.EnsureCreated();
-    }
-
     app.Run();
 }
 catch (Exception ex)

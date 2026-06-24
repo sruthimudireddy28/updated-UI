@@ -30,7 +30,7 @@ try
 
     // Configure Database
     builder.Services.AddDbContext<LoyaltyDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // Configure JWT Authentication
     var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -112,14 +112,6 @@ try
     app.MapControllers();
 
     Log.Information("Loyalty Service started successfully on port 5007");
-    
-    // Ensure Database is Created
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<LoyaltyDbContext>();
-        db.Database.EnsureCreated();
-    }
-
     app.Run();
 }
 catch (Exception ex)

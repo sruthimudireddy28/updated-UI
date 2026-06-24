@@ -62,7 +62,7 @@ namespace AuthService.Controllers
             var currentUserId = GetCurrentUserId();
             var currentUserRole = GetCurrentUserRole();
 
-            if (currentUserRole != "Admin" && currentUserId != id)
+            if (currentUserRole != "Admin")
             {
                 return Forbid();
             }

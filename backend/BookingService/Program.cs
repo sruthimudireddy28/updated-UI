@@ -30,7 +30,7 @@ try
 
     // Configure Database
     builder.Services.AddDbContext<BookingDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // Configure JWT Authentication
     var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -115,14 +115,6 @@ try
     app.MapControllers();
 
     Log.Information("Booking Service started successfully on port 5004");
-    
-    // Ensure Database is Created
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
-        db.Database.EnsureCreated();
-    }
-
     app.Run();
 }
 catch (Exception ex)

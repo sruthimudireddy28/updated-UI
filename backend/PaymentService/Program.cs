@@ -30,7 +30,7 @@ try
 
     // Configure Database
     builder.Services.AddDbContext<PaymentDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // Configure JWT Authentication
     var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -117,14 +117,6 @@ try
     app.MapControllers();
 
     Log.Information("Payment Service started successfully on port 5005");
-    
-    // Ensure Database is Created
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
-        db.Database.EnsureCreated();
-    }
-
     app.Run();
 }
 catch (Exception ex)
