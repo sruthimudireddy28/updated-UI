@@ -5,7 +5,7 @@
       <button (click)="onCloseClick()" class="btn-close">✕</button>
     </div>
 
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" #bookingForm="ngForm">
       <div class="booking-summary-box mb-4">
         <p>Hotel: <strong>{{ hotelName() }}</strong></p>
         <p>Dates: <strong>{{ checkIn() | date:'mediumDate' }}</strong> to <strong>{{ checkOut() | date:'mediumDate' }}</strong></p>
@@ -15,22 +15,38 @@
 
       <div class="form-group mb-3">
         <label class="form-label">Guest Full Name</label>
-        <input type="text" name="guestName" [(ngModel)]="formModel().guestName" required class="form-input" placeholder="John Doe" />
+        <input type="text" name="guestName" [(ngModel)]="formModel().guestName" required minlength="2" #guestNameRef="ngModel" class="form-input" placeholder="John Doe" />
+        <span class="validation-error" *ngIf="guestNameRef.touched && guestNameRef.invalid">
+          <span *ngIf="guestNameRef.errors?.['required']">Guest name is required.</span>
+          <span *ngIf="guestNameRef.errors?.['minlength']">Guest name must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Guest Email Address</label>
-        <input type="email" name="guestEmail" [(ngModel)]="formModel().guestEmail" required class="form-input" placeholder="john.doe@example.com" />
+        <input type="email" name="guestEmail" [(ngModel)]="formModel().guestEmail" required email #guestEmailRef="ngModel" class="form-input" placeholder="john.doe@example.com" />
+        <span class="validation-error" *ngIf="guestEmailRef.touched && guestEmailRef.invalid">
+          <span *ngIf="guestEmailRef.errors?.['required']">Email address is required.</span>
+          <span *ngIf="guestEmailRef.errors?.['email']">Please enter a valid email address.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Guest Phone Number</label>
-        <input type="tel" name="guestPhone" [(ngModel)]="formModel().guestPhone" required class="form-input" placeholder="+1 234 567 890" />
+        <input type="tel" name="guestPhone" [(ngModel)]="formModel().guestPhone" required pattern="[0-9+\-\s]{7,15}" #guestPhoneRef="ngModel" class="form-input" placeholder="+1 234 567 890" />
+        <span class="validation-error" *ngIf="guestPhoneRef.touched && guestPhoneRef.invalid">
+          <span *ngIf="guestPhoneRef.errors?.['required']">Phone number is required.</span>
+          <span *ngIf="guestPhoneRef.errors?.['pattern']">Please enter a valid phone number (7-15 digits).</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Number of Guests</label>
-        <input type="number" name="guestsCount" [(ngModel)]="formModel().numberOfGuests" [min]="1" required class="form-input" />
+        <input type="number" name="guestsCount" [(ngModel)]="formModel().numberOfGuests" [min]="1" required #guestsCountRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="guestsCountRef.touched && guestsCountRef.invalid">
+          <span *ngIf="guestsCountRef.errors?.['required']">Number of guests is required.</span>
+          <span *ngIf="guestsCountRef.errors?.['min']">There must be at least 1 guest.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
@@ -38,7 +54,7 @@
         <textarea name="specialReqs" [(ngModel)]="formModel().specialRequests" rows="3" class="form-input" placeholder="Extra pillows, early checkin, high floor..."></textarea>
       </div>
 
-      <button type="submit" [disabled]="submitting()" class="btn btn-primary w-full mt-4">
+      <button type="submit" [disabled]="bookingForm.invalid || submitting()" class="btn btn-primary w-full mt-4">
         @if (submitting()) {
           <span class="loader"></span>
         } @else {

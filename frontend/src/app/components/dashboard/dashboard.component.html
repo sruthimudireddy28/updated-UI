@@ -81,20 +81,24 @@
     <!-- Profile Edit Section -->
     <div class="profile-section glass-card mt-6" style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: rgba(0, 0, 0, 0.15);">
       <h2 class="section-title mb-4">My Profile</h2>
-      <form (ngSubmit)="updateProfile()">
+      <form #profileEditForm="ngForm" (ngSubmit)="updateProfile()">
         <div class="form-group mb-3">
           <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Full Name</label>
-          <input type="text" name="profileName" [(ngModel)]="profileForm.name" required class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+          <input type="text" name="profileName" [(ngModel)]="profileForm.name" required minlength="2" #profileNameRef="ngModel" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+          <span class="validation-error" *ngIf="profileNameRef.touched && profileNameRef.errors?.['required']">Full name is required.</span>
+          <span class="validation-error" *ngIf="profileNameRef.touched && profileNameRef.errors?.['minlength']">Name must be at least 2 characters.</span>
         </div>
         <div class="form-group mb-3">
           <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Contact Number</label>
-          <input type="text" name="profilePhone" [(ngModel)]="profileForm.contactNumber" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+          <input type="text" name="profilePhone" [(ngModel)]="profileForm.contactNumber" pattern="[0-9+\-\s]{7,15}" #profilePhoneRef="ngModel" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+          <span class="validation-error" *ngIf="profilePhoneRef.touched && profilePhoneRef.errors?.['pattern']">Please enter a valid phone number (7-15 digits).</span>
         </div>
         <div class="form-group mb-3">
           <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">New Password (Optional)</label>
-          <input type="password" name="profilePassword" [(ngModel)]="profileForm.password" class="form-input" placeholder="Leave blank to keep current" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+          <input type="password" name="profilePassword" [(ngModel)]="profileForm.password" minlength="6" #profilePasswordRef="ngModel" class="form-input" placeholder="Leave blank to keep current" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+          <span class="validation-error" *ngIf="profilePasswordRef.touched && profilePasswordRef.errors?.['minlength']">Password must be at least 6 characters.</span>
         </div>
-        <button type="submit" [disabled]="isUpdatingProfile()" class="btn btn-primary w-full mt-4" style="width: 100%; padding: 0.75rem; font-weight: 600; border-radius: var(--border-radius-md); background: var(--accent-indigo); border: none; color: white; cursor: pointer;">
+        <button type="submit" [disabled]="profileEditForm.invalid || isUpdatingProfile()" class="btn btn-primary w-full mt-4" style="width: 100%; padding: 0.75rem; font-weight: 600; border-radius: var(--border-radius-md); background: var(--accent-indigo); border: none; color: white; cursor: pointer;">
           @if (isUpdatingProfile()) {
             Saving...
           } @else {
@@ -144,19 +148,23 @@
       <button (click)="selectedBookingForCancel.set(null)" class="btn-close">✕</button>
     </div>
 
-    <form (ngSubmit)="submitCancellation()">
+    <form (ngSubmit)="submitCancellation()" #cancelForm="ngForm">
       <p class="modal-warning-text mb-4">
         Are you sure you want to cancel your reservation for Booking #{{ selectedBookingForCancel()?.bookingId }}?
       </p>
 
       <div class="form-group mb-3">
         <label class="form-label">Reason for Cancellation</label>
-        <textarea name="cancelReason" [(ngModel)]="cancellationReason" required rows="3" class="form-input" placeholder="Change of plans, health issue..."></textarea>
+        <textarea name="cancelReason" [(ngModel)]="cancellationReason" required minlength="5" #cancelReasonRef="ngModel" rows="3" class="form-input" placeholder="Change of plans, health issue..."></textarea>
+        <span class="validation-error" *ngIf="cancelReasonRef.touched && cancelReasonRef.invalid">
+          <span *ngIf="cancelReasonRef.errors?.['required']">Cancellation reason is required.</span>
+          <span *ngIf="cancelReasonRef.errors?.['minlength']">Reason must be at least 5 characters.</span>
+        </span>
       </div>
 
       <div class="grid-cols-2 mt-4">
         <button type="button" (click)="selectedBookingForCancel.set(null)" class="btn btn-secondary w-full">Keep Booking</button>
-        <button type="submit" [disabled]="isCancelling()" class="btn btn-danger w-full">Confirm Cancellation</button>
+        <button type="submit" [disabled]="cancelForm.invalid || isCancelling()" class="btn btn-danger w-full">Confirm Cancellation</button>
       </div>
     </form>
   </div>

@@ -1,19 +1,25 @@
 <div class="glass-card h-full">
   <h2 class="section-title mb-4">Add Room to Inventory</h2>
-  <form (ngSubmit)="onSubmit()">
+  <form (ngSubmit)="onSubmit()" #addRoomForm="ngForm">
     <div class="form-group mb-3">
       <label class="form-label">Select Hotel</label>
-      <select name="roomHotelId" [(ngModel)]="formModel().hotelId" required class="form-input select-input">
+      <select name="roomHotelId" [(ngModel)]="formModel().hotelId" required #roomHotelIdRef="ngModel" class="form-input select-input">
         <option [value]="0">Choose Hotel</option>
         @for (h of hotels(); track h.hotelId) {
           <option [value]="h.hotelId">{{ h.name }} ({{ h.location }})</option>
         }
       </select>
+      <span class="validation-error" *ngIf="roomHotelIdRef.touched && roomHotelIdRef.invalid">
+        <span *ngIf="roomHotelIdRef.errors?.['required']">Please select a hotel.</span>
+      </span>
     </div>
     
     <div class="form-group mb-3">
       <label class="form-label">Room Number</label>
-      <input type="text" name="roomNumber" [(ngModel)]="formModel().roomNumber" required class="form-input" placeholder="e.g., 101, 304-A" />
+      <input type="text" name="roomNumber" [(ngModel)]="formModel().roomNumber" required #roomNumberRef="ngModel" class="form-input" placeholder="e.g., 101, 304-A" />
+      <span class="validation-error" *ngIf="roomNumberRef.touched && roomNumberRef.invalid">
+        <span *ngIf="roomNumberRef.errors?.['required']">Room number is required.</span>
+      </span>
     </div>
 
     <div class="form-group mb-3">
@@ -28,7 +34,11 @@
 
     <div class="form-group mb-3">
       <label class="form-label">Price per Night (₹)</label>
-      <input type="number" name="roomPrice" [(ngModel)]="formModel().pricePerNight" required class="form-input" placeholder="4500" />
+      <input type="number" name="roomPrice" [(ngModel)]="formModel().pricePerNight" required [min]="1" #roomPriceRef="ngModel" class="form-input" placeholder="4500" />
+      <span class="validation-error" *ngIf="roomPriceRef.touched && roomPriceRef.invalid">
+        <span *ngIf="roomPriceRef.errors?.['required']">Price is required.</span>
+        <span *ngIf="roomPriceRef.errors?.['min']">Price must be at least 1.</span>
+      </span>
     </div>
 
     <div class="form-group mb-3">
@@ -36,7 +46,7 @@
       <input type="text" name="roomAms" [(ngModel)]="formModel().amenities" class="form-input" placeholder="AC, Balcony, Mini Bar, TV, Safe" />
     </div>
 
-    <button type="submit" [disabled]="submitting()" class="btn btn-primary w-full mt-4">
+    <button type="submit" [disabled]="addRoomForm.invalid || submitting()" class="btn btn-primary w-full mt-4">
       @if (submitting()) {
         <span class="loader"></span>
       } @else {

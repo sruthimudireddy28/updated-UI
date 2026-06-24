@@ -5,7 +5,7 @@
       <button (click)="onCloseClick()" class="btn-close">✕</button>
     </div>
 
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" #paymentForm="ngForm">
       <p class="modal-summary">
         Hotel: <strong>{{ booking().hotelName || 'Smart Hotel' }}</strong><br>
         Room Type: <strong>{{ booking().roomType || 'Standard Room' }}</strong><br>
@@ -39,26 +39,42 @@
 
       <div class="form-group mb-3">
         <label class="form-label">Cardholder Name</label>
-        <input type="text" name="cardName" [(ngModel)]="formModel().cardHolderName" required class="form-input" placeholder="John Doe" />
+        <input type="text" name="cardName" [(ngModel)]="formModel().cardHolderName" required minlength="2" #cardNameRef="ngModel" class="form-input" placeholder="John Doe" />
+        <span class="validation-error" *ngIf="cardNameRef.touched && cardNameRef.invalid">
+          <span *ngIf="cardNameRef.errors?.['required']">Cardholder name is required.</span>
+          <span *ngIf="cardNameRef.errors?.['minlength']">Name must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Card Number</label>
-        <input type="text" name="cardNumber" [(ngModel)]="formModel().cardNumber" required class="form-input" placeholder="4111 2222 3333 4444" />
+        <input type="text" name="cardNumber" [(ngModel)]="formModel().cardNumber" required pattern="[0-9\s]{13,19}" #cardNumberRef="ngModel" class="form-input" placeholder="4111 2222 3333 4444" />
+        <span class="validation-error" *ngIf="cardNumberRef.touched && cardNumberRef.invalid">
+          <span *ngIf="cardNumberRef.errors?.['required']">Card number is required.</span>
+          <span *ngIf="cardNumberRef.errors?.['pattern']">Please enter a valid card number (13-19 digits).</span>
+        </span>
       </div>
 
       <div class="grid-cols-2 mb-3">
         <div class="form-group">
           <label class="form-label">Expiry Date</label>
-          <input type="text" name="expiry" [(ngModel)]="formModel().expiryDate" required class="form-input" placeholder="MM/YY" />
+          <input type="text" name="expiry" [(ngModel)]="formModel().expiryDate" required pattern="(0[1-9]|1[0-2])\/[0-9]{2}" #expiryRef="ngModel" class="form-input" placeholder="MM/YY" />
+          <span class="validation-error" *ngIf="expiryRef.touched && expiryRef.invalid">
+            <span *ngIf="expiryRef.errors?.['required']">Expiry date is required.</span>
+            <span *ngIf="expiryRef.errors?.['pattern']">Use MM/YY format.</span>
+          </span>
         </div>
         <div class="form-group">
           <label class="form-label">CVV</label>
-          <input type="text" name="cvv" [(ngModel)]="formModel().cvv" required class="form-input" placeholder="123" />
+          <input type="text" name="cvv" [(ngModel)]="formModel().cvv" required pattern="[0-9]{3,4}" #cvvRef="ngModel" class="form-input" placeholder="123" />
+          <span class="validation-error" *ngIf="cvvRef.touched && cvvRef.invalid">
+            <span *ngIf="cvvRef.errors?.['required']">CVV is required.</span>
+            <span *ngIf="cvvRef.errors?.['pattern']">CVV must be 3 or 4 digits.</span>
+          </span>
         </div>
       </div>
 
-      <button type="submit" [disabled]="submitting()" class="btn btn-primary w-full mt-4">
+      <button type="submit" [disabled]="paymentForm.invalid || submitting()" class="btn btn-primary w-full mt-4">
         @if (submitting()) {
           <span class="loader"></span>
         } @else {

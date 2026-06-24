@@ -230,16 +230,20 @@
       </p>
     </div>
 
+    <form #editMgrForm="ngForm">
     <!-- Name Field -->
     <div class="form-group mb-3">
       <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Full Name</label>
-      <input type="text" name="editMgrName" [(ngModel)]="editManagerForm.name" required class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+      <input type="text" name="editMgrName" [(ngModel)]="editManagerForm.name" required minlength="2" #editMgrNameRef="ngModel" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+      <span class="validation-error" *ngIf="editMgrNameRef.touched && editMgrNameRef.errors?.['required']">Manager name is required.</span>
+      <span class="validation-error" *ngIf="editMgrNameRef.touched && editMgrNameRef.errors?.['minlength']">Name must be at least 2 characters.</span>
     </div>
 
     <!-- Contact Field -->
     <div class="form-group mb-3">
       <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Contact Number</label>
-      <input type="text" name="editMgrContact" [(ngModel)]="editManagerForm.contactNumber" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+      <input type="text" name="editMgrContact" [(ngModel)]="editManagerForm.contactNumber" pattern="[0-9+\-\s]{7,15}" #editMgrContactRef="ngModel" class="form-input" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-primary);" />
+      <span class="validation-error" *ngIf="editMgrContactRef.touched && editMgrContactRef.errors?.['pattern']">Please enter a valid contact number (7-15 digits).</span>
     </div>
 
     <!-- Hotel Assignments -->
@@ -266,9 +270,10 @@
       </div>
     </div>
 
+    </form>
     <div class="grid-cols-2 mt-4">
       <button type="button" (click)="selectedManagerForEdit.set(null)" class="btn btn-secondary w-full">Cancel</button>
-      <button type="button" (click)="saveManagerEdits()" [disabled]="isSavingManagerEdit()" class="btn btn-primary w-full">
+      <button type="button" (click)="saveManagerEdits()" [disabled]="editMgrNameRef.invalid || isSavingManagerEdit()" class="btn btn-primary w-full">
         @if (isSavingManagerEdit()) {
           Saving...
         } @else {

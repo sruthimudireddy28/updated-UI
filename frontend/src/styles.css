@@ -194,6 +194,32 @@ button, .btn {
   border-color: var(--accent-indigo);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
+
+/* Validation Styles */
+.form-input.ng-invalid.ng-touched {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.form-input.ng-valid.ng-touched {
+  border-color: var(--color-success);
+}
+
+.validation-error {
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  animation: fadeIn 0.25s ease;
+}
+
+.validation-error::before {
+  content: '⚠';
+  font-size: 0.7rem;
+}
  
 /* ============================= */
 /* Badges */

@@ -1,19 +1,31 @@
 <div class="glass-card h-full">
   <h2 class="section-title mb-4">Register New Hotel</h2>
-  <form (ngSubmit)="onSubmit()">
+  <form (ngSubmit)="onSubmit()" #addHotelForm="ngForm">
     <div class="form-group mb-3">
       <label class="form-label">Hotel Name</label>
-      <input type="text" name="hotelName" [(ngModel)]="formModel().name" required class="form-input" placeholder="The Grand Palace" />
+      <input type="text" name="hotelName" [(ngModel)]="formModel().name" required minlength="2" #hotelNameRef="ngModel" class="form-input" placeholder="The Grand Palace" />
+      <span class="validation-error" *ngIf="hotelNameRef.touched && hotelNameRef.invalid">
+        <span *ngIf="hotelNameRef.errors?.['required']">Hotel name is required.</span>
+        <span *ngIf="hotelNameRef.errors?.['minlength']">Hotel name must be at least 2 characters.</span>
+      </span>
     </div>
 
     <div class="form-group mb-3">
       <label class="form-label">Location / City</label>
-      <input type="text" name="hotelLoc" [(ngModel)]="formModel().location" required class="form-input" placeholder="Goa, India" />
+      <input type="text" name="hotelLoc" [(ngModel)]="formModel().location" required minlength="2" #hotelLocRef="ngModel" class="form-input" placeholder="Goa, India" />
+      <span class="validation-error" *ngIf="hotelLocRef.touched && hotelLocRef.invalid">
+        <span *ngIf="hotelLocRef.errors?.['required']">Location is required.</span>
+        <span *ngIf="hotelLocRef.errors?.['minlength']">Location must be at least 2 characters.</span>
+      </span>
     </div>
 
     <div class="form-group mb-3">
       <label class="form-label">Description</label>
-      <textarea name="hotelDesc" [(ngModel)]="formModel().description" required rows="3" class="form-input" placeholder="A 5-star beachfront resort..."></textarea>
+      <textarea name="hotelDesc" [(ngModel)]="formModel().description" required minlength="10" #hotelDescRef="ngModel" rows="3" class="form-input" placeholder="A 5-star beachfront resort..."></textarea>
+      <span class="validation-error" *ngIf="hotelDescRef.touched && hotelDescRef.invalid">
+        <span *ngIf="hotelDescRef.errors?.['required']">Description is required.</span>
+        <span *ngIf="hotelDescRef.errors?.['minlength']">Description must be at least 10 characters.</span>
+      </span>
     </div>
 
     <div class="form-group mb-3">
@@ -21,7 +33,7 @@
       <input type="text" name="hotelAms" [(ngModel)]="formModel().amenities" class="form-input" placeholder="WiFi, Pool, Spa, Parking, Gym" />
     </div>
 
-    <button type="submit" [disabled]="submitting()" class="btn btn-primary w-full mt-4">
+    <button type="submit" [disabled]="addHotelForm.invalid || submitting()" class="btn btn-primary w-full mt-4">
       @if (submitting()) {
         <span class="loader"></span>
       } @else {

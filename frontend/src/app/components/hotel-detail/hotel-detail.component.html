@@ -149,45 +149,76 @@
       <button (click)="isEditingHotel.set(false)" class="btn-close">✕</button>
     </div>
 
-    <form (ngSubmit)="submitEditHotel()">
+    <form (ngSubmit)="submitEditHotel()" #editHotelFormRef="ngForm">
       <div class="form-group mb-3">
         <label class="form-label">Hotel Name</label>
-        <input type="text" name="hotelName" [(ngModel)]="editHotelForm.name" required class="form-input" />
+        <input type="text" name="hotelName" [(ngModel)]="editHotelForm.name" required minlength="2" #editHotelNameRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelNameRef.touched && editHotelNameRef.invalid">
+          <span *ngIf="editHotelNameRef.errors?.['required']">Hotel name is required.</span>
+          <span *ngIf="editHotelNameRef.errors?.['minlength']">Hotel name must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Location (Description)</label>
-        <input type="text" name="hotelLoc" [(ngModel)]="editHotelForm.location" required class="form-input" />
+        <input type="text" name="hotelLoc" [(ngModel)]="editHotelForm.location" required minlength="2" #editHotelLocRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelLocRef.touched && editHotelLocRef.invalid">
+          <span *ngIf="editHotelLocRef.errors?.['required']">Location is required.</span>
+          <span *ngIf="editHotelLocRef.errors?.['minlength']">Location must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Address</label>
-        <input type="text" name="hotelAddr" [(ngModel)]="editHotelForm.address" required class="form-input" />
+        <input type="text" name="hotelAddr" [(ngModel)]="editHotelForm.address" required minlength="2" #editHotelAddrRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelAddrRef.touched && editHotelAddrRef.invalid">
+          <span *ngIf="editHotelAddrRef.errors?.['required']">Address is required.</span>
+          <span *ngIf="editHotelAddrRef.errors?.['minlength']">Address must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">City</label>
-        <input type="text" name="hotelCity" [(ngModel)]="editHotelForm.city" required class="form-input" />
+        <input type="text" name="hotelCity" [(ngModel)]="editHotelForm.city" required minlength="2" #editHotelCityRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelCityRef.touched && editHotelCityRef.invalid">
+          <span *ngIf="editHotelCityRef.errors?.['required']">City is required.</span>
+          <span *ngIf="editHotelCityRef.errors?.['minlength']">City must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">State</label>
-        <input type="text" name="hotelState" [(ngModel)]="editHotelForm.state" required class="form-input" />
+        <input type="text" name="hotelState" [(ngModel)]="editHotelForm.state" required minlength="2" #editHotelStateRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelStateRef.touched && editHotelStateRef.invalid">
+          <span *ngIf="editHotelStateRef.errors?.['required']">State is required.</span>
+          <span *ngIf="editHotelStateRef.errors?.['minlength']">State must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Country</label>
-        <input type="text" name="hotelCountry" [(ngModel)]="editHotelForm.country" required class="form-input" />
+        <input type="text" name="hotelCountry" [(ngModel)]="editHotelForm.country" required minlength="2" #editHotelCountryRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelCountryRef.touched && editHotelCountryRef.invalid">
+          <span *ngIf="editHotelCountryRef.errors?.['required']">Country is required.</span>
+          <span *ngIf="editHotelCountryRef.errors?.['minlength']">Country must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Zip Code</label>
-        <input type="text" name="hotelZip" [(ngModel)]="editHotelForm.zipCode" required class="form-input" />
+        <input type="text" name="hotelZip" [(ngModel)]="editHotelForm.zipCode" required #editHotelZipRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelZipRef.touched && editHotelZipRef.invalid">
+          <span *ngIf="editHotelZipRef.errors?.['required']">Zip code is required.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Description</label>
-        <textarea name="hotelDesc" [(ngModel)]="editHotelForm.description" rows="3" required class="form-input"></textarea>
+        <textarea name="hotelDesc" [(ngModel)]="editHotelForm.description" rows="3" required minlength="10" #editHotelDescRef="ngModel" class="form-input"></textarea>
+        <span class="validation-error" *ngIf="editHotelDescRef.touched && editHotelDescRef.invalid">
+          <span *ngIf="editHotelDescRef.errors?.['required']">Description is required.</span>
+          <span *ngIf="editHotelDescRef.errors?.['minlength']">Description must be at least 10 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
@@ -202,7 +233,10 @@
 
       <div class="form-group mb-3">
         <label class="form-label">Email</label>
-        <input type="email" name="hotelEmail" [(ngModel)]="editHotelForm.email" class="form-input" />
+        <input type="email" name="hotelEmail" [(ngModel)]="editHotelForm.email" #editHotelEmailRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editHotelEmailRef.touched && editHotelEmailRef.invalid">
+          <span *ngIf="editHotelEmailRef.errors?.['email']">Please enter a valid email address.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
@@ -210,7 +244,7 @@
         <input type="text" name="hotelAmenities" [(ngModel)]="editHotelForm.amenities" class="form-input" />
       </div>
 
-      <button type="submit" class="btn btn-primary w-full mt-4">
+      <button type="submit" [disabled]="editHotelFormRef.invalid" class="btn btn-primary w-full mt-4">
         Save Changes
       </button>
     </form>
@@ -225,50 +259,85 @@
       <button (click)="editingRoom.set(null)" class="btn-close">✕</button>
     </div>
 
-    <form (ngSubmit)="submitEditRoom()">
+    <form (ngSubmit)="submitEditRoom()" #editRoomFormRef="ngForm">
       <div class="form-group mb-3">
         <label class="form-label">Room Number</label>
-        <input type="text" name="roomNumber" [(ngModel)]="editRoomForm.roomNumber" required class="form-input" />
+        <input type="text" name="roomNumber" [(ngModel)]="editRoomForm.roomNumber" required #editRoomNumberRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomNumberRef.touched && editRoomNumberRef.invalid">
+          <span *ngIf="editRoomNumberRef.errors?.['required']">Room number is required.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Room Type</label>
-        <input type="text" name="roomType" [(ngModel)]="editRoomForm.roomType" required class="form-input" />
+        <input type="text" name="roomType" [(ngModel)]="editRoomForm.roomType" required minlength="2" #editRoomTypeRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomTypeRef.touched && editRoomTypeRef.invalid">
+          <span *ngIf="editRoomTypeRef.errors?.['required']">Room type is required.</span>
+          <span *ngIf="editRoomTypeRef.errors?.['minlength']">Room type must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Price Per Night (INR)</label>
-        <input type="number" name="roomPrice" [(ngModel)]="editRoomForm.pricePerNight" required class="form-input" />
+        <input type="number" name="roomPrice" [(ngModel)]="editRoomForm.pricePerNight" required [min]="1" #editRoomPriceRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomPriceRef.touched && editRoomPriceRef.invalid">
+          <span *ngIf="editRoomPriceRef.errors?.['required']">Price is required.</span>
+          <span *ngIf="editRoomPriceRef.errors?.['min']">Price must be at least 1.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Description</label>
-        <textarea name="roomDesc" [(ngModel)]="editRoomForm.description" rows="3" required class="form-input"></textarea>
+        <textarea name="roomDesc" [(ngModel)]="editRoomForm.description" rows="3" required minlength="10" #editRoomDescRef="ngModel" class="form-input"></textarea>
+        <span class="validation-error" *ngIf="editRoomDescRef.touched && editRoomDescRef.invalid">
+          <span *ngIf="editRoomDescRef.errors?.['required']">Description is required.</span>
+          <span *ngIf="editRoomDescRef.errors?.['minlength']">Description must be at least 10 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Max Occupancy</label>
-        <input type="number" name="roomOccupancy" [(ngModel)]="editRoomForm.maxOccupancy" required class="form-input" />
+        <input type="number" name="roomOccupancy" [(ngModel)]="editRoomForm.maxOccupancy" required [min]="1" #editRoomOccupancyRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomOccupancyRef.touched && editRoomOccupancyRef.invalid">
+          <span *ngIf="editRoomOccupancyRef.errors?.['required']">Max occupancy is required.</span>
+          <span *ngIf="editRoomOccupancyRef.errors?.['min']">Max occupancy must be at least 1.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Bed Count</label>
-        <input type="number" name="roomBedCount" [(ngModel)]="editRoomForm.bedCount" required class="form-input" />
+        <input type="number" name="roomBedCount" [(ngModel)]="editRoomForm.bedCount" required [min]="1" #editRoomBedCountRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomBedCountRef.touched && editRoomBedCountRef.invalid">
+          <span *ngIf="editRoomBedCountRef.errors?.['required']">Bed count is required.</span>
+          <span *ngIf="editRoomBedCountRef.errors?.['min']">Bed count must be at least 1.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Bed Type</label>
-        <input type="text" name="roomBedType" [(ngModel)]="editRoomForm.bedType" required class="form-input" />
+        <input type="text" name="roomBedType" [(ngModel)]="editRoomForm.bedType" required minlength="2" #editRoomBedTypeRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomBedTypeRef.touched && editRoomBedTypeRef.invalid">
+          <span *ngIf="editRoomBedTypeRef.errors?.['required']">Bed type is required.</span>
+          <span *ngIf="editRoomBedTypeRef.errors?.['minlength']">Bed type must be at least 2 characters.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Floor Number</label>
-        <input type="number" name="roomFloor" [(ngModel)]="editRoomForm.floorNumber" required class="form-input" />
+        <input type="number" name="roomFloor" [(ngModel)]="editRoomForm.floorNumber" required [min]="1" #editRoomFloorRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomFloorRef.touched && editRoomFloorRef.invalid">
+          <span *ngIf="editRoomFloorRef.errors?.['required']">Floor number is required.</span>
+          <span *ngIf="editRoomFloorRef.errors?.['min']">Floor number must be at least 1.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
         <label class="form-label">Room Size (Sq Ft)</label>
-        <input type="number" name="roomSize" [(ngModel)]="editRoomForm.roomSize" required class="form-input" />
+        <input type="number" name="roomSize" [(ngModel)]="editRoomForm.roomSize" required [min]="1" #editRoomSizeRef="ngModel" class="form-input" />
+        <span class="validation-error" *ngIf="editRoomSizeRef.touched && editRoomSizeRef.invalid">
+          <span *ngIf="editRoomSizeRef.errors?.['required']">Room size is required.</span>
+          <span *ngIf="editRoomSizeRef.errors?.['min']">Room size must be at least 1.</span>
+        </span>
       </div>
 
       <div class="form-group mb-3">
@@ -281,7 +350,7 @@
         <label for="roomAvailable" class="form-label mb-0 cursor-pointer" style="margin-bottom: 0;">Available for Booking</label>
       </div>
 
-      <button type="submit" class="btn btn-primary w-full mt-4">
+      <button type="submit" [disabled]="editRoomFormRef.invalid" class="btn btn-primary w-full mt-4">
         Save Changes
       </button>
     </form>

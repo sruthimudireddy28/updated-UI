@@ -35,28 +35,9 @@ export class BookingFormDialogComponent {
 confirm = output<void>();
 
 onSubmit() {
-  // Validate form before emitting
-  const form = this.formModel();
-  if (!form.guestName || !form.guestName.trim()) {
-    alert('Please enter guest name');
-    return;
-  }
-  if (!form.guestEmail || !form.guestEmail.trim()) {
-    alert('Please enter guest email');
-    return;
-  }
-  if (!form.guestPhone || !form.guestPhone.trim()) {
-    alert('Please enter guest phone');
-    return;
-  }
-  if (!form.numberOfGuests || form.numberOfGuests < 1) {
-    alert('Please enter number of guests');
-    return;
-  }
-
-  // 2. Emit using the safe custom event name
   this.confirm.emit();
 }
+
 
   getNightsCount(): number {
     if (!this.checkIn() || !this.checkOut()) return 1;
