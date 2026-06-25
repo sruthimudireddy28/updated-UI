@@ -27,13 +27,18 @@ export class RoomCardComponent {
     this.delete.emit(this.room());
   }
 
- getAmenities(amenities: string | string[] | null): string[] {
+ getAmenities(amenities: any[] | string | null): string[] {
   if (!amenities) {
     return ['WiFi', 'AC', 'TV']; // fallback
   }
 
   if (Array.isArray(amenities)) {
-    return amenities; // already an array
+    return amenities.map(a => {
+      if (typeof a === 'object' && a !== null) {
+        return a.name || '';
+      }
+      return String(a);
+    }).filter(s => s.length > 0);
   }
 
   // if it's a string, split it
